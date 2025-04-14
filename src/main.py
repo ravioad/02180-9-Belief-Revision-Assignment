@@ -1,27 +1,29 @@
-from src.belief_base import BeliefBase
-from src.parser import parse_formula
+from belief_base import BeliefBase
+from formula import Atom, Or, Not
+from parser import parse_formula
+from resolution import entails_resolution
 
 if __name__ == "__main__":
-    clause1_str = "~r | p | s"  # Represents (¬r ∨ p ∨ s)
-    clause2_str = "~p | r"  # Represents (¬p ∨ r)
-    clause3_str = "~s | r"  # Represents (¬s ∨ r)
-    clause1 = parse_formula(clause1_str)
-    clause2 = parse_formula(clause2_str)
-    clause3 = parse_formula(clause3_str)
+    # Example 3: Using the CNF formula from slides (KB |= ¬p ?)
+    # KB = (¬r ∨ p ∨ s) ∧ (¬p ∨ r) ∧ (¬s ∨ r) ∧ ¬r
+    print("\nExample 3: Robert lucky/prepared")
+    r = Atom("r")
+    p = Atom("p")
+    s = Atom("s")
+    # Original belief: r ↔ (p ∨ s) AND ¬r
+    # CNF clauses derived before: (¬r ∨ p ∨ s), (¬p ∨ r), (¬s ∨ r), ¬r
+    clause1 = Or(Or(Not(r), p), s)
+    clause2 = Or(Not(p), r)
+    clause3 = Or(Not(s), r)
+    clause4 = Not(r)
+    kb3_formulas = [clause1, clause2, clause3, clause4]
+    bb3 = BeliefBase(kb3_formulas)
+    not_p_query = parse_formula("¬p")  # Query: Robert is not prepared
+    result3 = entails_resolution(bb3, not_p_query)
+    print(f"RESULT: KB |= {not_p_query}: {result3} (Expected: True)")
 
-    # Create a list of these formula objects
-    beliefs_list = [clause1, clause2, clause3]  # Add extra_belief here if needed
-
-    # Create the BeliefBase instance with these clauses
-    cnf_belief_base = BeliefBase(beliefs_list)
-
-    # Print the belief base to see the result
-    print("--- Belief Base containing clauses from CNF ---")
-    print(cnf_belief_base)
-    print(f"Number of belief formulas: {len(cnf_belief_base)}")
-
-    # You can retrieve the list if needed
-    retrieved_beliefs = cnf_belief_base.get_beliefs()
-    print("\nRetrieved belief list:")
-    for belief in retrieved_beliefs:
-        print(f"- {belief} (Type: {type(belief).__name__})")
+    # Example 4: Does KB3 entail 's'? (Should be False)
+    print("\nExample 4: Robert lucky/prepared - False Query")
+    s_query = parse_formula("s")  # Query: Robert is lucky
+    result4 = entails_resolution(bb3, s_query)
+    print(f"RESULT: KB |= {s_query}: {result4} (Expected: False)")

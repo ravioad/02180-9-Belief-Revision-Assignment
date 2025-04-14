@@ -99,9 +99,6 @@ class BinaryOp(Formula):
             # Add parens if inner operator has lower precedence (higher number)
             if left_prec > current_prec:
                 left_str = f"({left_str})"
-            # Optional: Also add if same precedence for left-assoc clarity, but often omitted
-            # elif left_prec == current_prec and self.symbol != '→': # Avoid for right-assoc implies
-            #      left_str = f"({left_str})"
 
         # Parenthesize right operand if necessary
         if isinstance(self.right, BinaryOp):
@@ -117,24 +114,6 @@ class BinaryOp(Formula):
             # This ensures a OP (b OP c) prints correctly if OP is left assoc.
             elif right_prec == current_prec and self.symbol != '→':  # Assuming others are left-assoc
                 right_str = f"({right_str})"
-
-        return f"{left_str} {self.symbol} {right_str}"
-        # left_str = str(self.left)
-        # right_str = str(self.right)
-        #
-        # # Add parentheses around operands if they have lower precedence (higher number)
-        # # or are the same precedence and right-associative (only implication here technically)
-        # # NEW check for left operand (add parentheses if precedence differs)
-        # if isinstance(self.left, BinaryOp) and BinaryOp.PRECEDENCE.get(self.left.symbol, -1) != BinaryOp.PRECEDENCE[
-        #     self.symbol]:
-        #     left_str = f"({left_str})"
-        # # if isinstance(self.left, BinaryOp) and BinaryOp.PRECEDENCE.get(self.left.symbol, -1) > BinaryOp.PRECEDENCE[self.symbol]:
-        # #      left_str = f"({left_str})"
-        # if isinstance(self.right, BinaryOp):
-        #     # Parenthesize if right has lower precedence OR if it's the same precedence and the *outer* op is right-associative (implication)
-        #     if BinaryOp.PRECEDENCE.get(self.right.symbol, -1) > BinaryOp.PRECEDENCE[self.symbol] or \
-        #        (BinaryOp.PRECEDENCE.get(self.right.symbol, -1) == BinaryOp.PRECEDENCE[self.symbol] and self.symbol == '→'):
-        #          right_str = f"({right_str})"
 
         return f"{left_str} {self.symbol} {right_str}"
 
@@ -182,7 +161,6 @@ BINARY_OPERATORS = {'∧', '∨', '→', '↔'}
 
 def tokenize(formula_str: str) -> List[str]:
     """Basic tokenizer splitting on spaces and handling parentheses/negation."""
-    # Replace common alternatives
     formula_str = formula_str.replace('~', '¬')
     formula_str = formula_str.replace('&', '∧')
     formula_str = formula_str.replace('|', '∨')
@@ -195,61 +173,3 @@ def tokenize(formula_str: str) -> List[str]:
     # Remove extra whitespace
     tokens = formula_str.strip().split()
     return [tok for tok in tokens if tok] # Filter out empty strings
-#
-#
-# def parse_prefix(tokens: List[str]) -> Tuple[Optional[Formula], List[str]]:
-#     """Parses a formula starting from the beginning of the token list (prefix)."""
-#     if not tokens:
-#         return None, []
-#
-#     token = tokens[0]
-#     remaining_tokens = tokens[1:]
-#
-#     if token == '¬':
-#         operand, remaining_tokens = parse_prefix(remaining_tokens)
-#         if operand is None:
-#             raise ValueError("Parse error: Expected formula after ¬")
-#         return Not(operand), remaining_tokens
-#     elif token == '(':
-#         left, remaining_tokens = parse_prefix(remaining_tokens)
-#         if not remaining_tokens:
-#              raise ValueError("Parse error: Expected operator after opening parenthesis and left operand")
-#         op_symbol = remaining_tokens[0]
-#         remaining_tokens = remaining_tokens[1:]
-#         if op_symbol not in ['∧', '∨', '→', '↔']:
-#              raise ValueError(f"Parse error: Expected binary operator, got {op_symbol}")
-#
-#         right, remaining_tokens = parse_prefix(remaining_tokens)
-#         if not remaining_tokens or remaining_tokens[0] != ')':
-#              raise ValueError("Parse error: Expected closing parenthesis")
-#
-#         remaining_tokens = remaining_tokens[1:] # Consume ')'
-#
-#         if left is None or right is None:
-#             raise ValueError("Parse error: Missing operand for binary operator")
-#
-#         if op_symbol == '∧':
-#             return And(left, right), remaining_tokens
-#         elif op_symbol == '∨':
-#             return Or(left, right), remaining_tokens
-#         elif op_symbol == '→':
-#             return Implies(left, right), remaining_tokens
-#         elif op_symbol == '↔':
-#              return Iff(left, right), remaining_tokens
-#         else:
-#              raise ValueError(f"Internal Parse error: Unhandled operator {op_symbol}") # Should not happen
-#
-#     elif token.isalnum() and token[0].isalpha(): # Basic check for atom
-#         return Atom(token), remaining_tokens
-#     else:
-#         raise ValueError(f"Parse error: Unexpected token '{token}'")
-#
-# def parse_formula(formula_str: str) -> Formula:
-#     """Parses a string representation into a Formula object."""
-#     tokens = tokenize(formula_str)
-#     formula, remaining_tokens = parse_prefix(tokens)
-#     if remaining_tokens:
-#         raise ValueError(f"Parse error: Unexpected tokens at end: {remaining_tokens}")
-#     if formula is None:
-#          raise ValueError("Parse error: Could not parse formula")
-#     return formula

@@ -17,8 +17,8 @@ def get_complement(literal: Literal) -> Literal:
         # Complement of p is ¬p
         return Not(literal)
     else:
-        # Should not happen if input is a literal
         raise TypeError("Input must be a Literal (Atom or Not(Atom))")
+
 
 def resolve(clause1: Clause, clause2: Clause) -> Set[Clause]:
     """
@@ -35,7 +35,7 @@ def resolve(clause1: Clause, clause2: Clause) -> Set[Clause]:
         contradiction (e.g., {p} and {¬p}) is resolved.
     """
     resolvents: Set[Clause] = set()
-    resolved_on_literal = False # Flag to track if any resolution happened
+    resolved_on_literal = False  # Flag to track if any resolution happened
 
     # Iterate through literals in the first clause
     for lit1 in clause1:
@@ -53,11 +53,11 @@ def resolve(clause1: Clause, clause2: Clause) -> Set[Clause]:
             for lit in combined:
                 if get_complement(lit) in combined:
                     has_contradiction = True
-                    break # Tautological resolvent (e.g., p v q v ~p), ignore it
-                temp_literals.add(lit) # Use a temporary set to handle potential internal duplicates cleanly
+                    break  # Tautological resolvent (e.g., p v q v ~p), ignore it
+                temp_literals.add(lit)  # Use a temporary set to handle potential internal duplicates cleanly
 
             if not has_contradiction:
-                resolvents.add(frozenset(temp_literals)) # Use temp_literals after check
+                resolvents.add(frozenset(temp_literals))  # Use temp_literals after check
 
     # If no complementary literals were found, resolution isn't possible between these two specific clauses
     # based on the check direction (lit1 in clause1 vs complement in clause2).
@@ -69,7 +69,6 @@ def resolve(clause1: Clause, clause2: Clause) -> Set[Clause]:
     # combined = {} and frozenset({}) gets added to resolvents.
 
     return resolvents
-
 
 
 # --- Main Resolution Algorithm for Entailment ---
@@ -100,16 +99,17 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
         print(f"  Converting: {f}")
         cnf_f = to_cnf(f)
         print(f"  Resulting CNF clauses: {cnf_to_string(cnf_f) if cnf_f else '{}'}")
-        clauses.update(cnf_f) # Add all clauses from this formula's CNF
+        clauses.update(cnf_f)  # Add all clauses from this formula's CNF
 
     print(f"\nInitial combined clauses for resolution: {cnf_to_string(clauses)}")
     if frozenset() in clauses:
-         print("Initial clauses contain empty clause (contradiction from start). KB |= query is vacuously true if KB was already contradictory, or ¬query was a tautology.")
-         # Technically, if KB is already contradictory, it entails everything.
-         # If ¬query is a tautology, KB ∧ ¬query is contradictory.
-         # Let's refine: check KB consistency *first*? For now, proceed.
-         # If empty clause is immediately present, it means unsatisfiable.
-         return True # KB ^ ~query is unsatisfiable
+        print(
+            "Initial clauses contain empty clause (contradiction from start). KB |= query is vacuously true if KB was already contradictory, or ¬query was a tautology.")
+        # Technically, if KB is already contradictory, it entails everything.
+        # If ¬query is a tautology, KB ∧ ¬query is contradictory.
+        # Let's refine: check KB consistency *first*? For now, proceed.
+        # If empty clause is immediately present, it means unsatisfiable.
+        return True  # KB ^ ~query is unsatisfiable
 
     # 3. Resolution Loop
     iteration = 0
@@ -117,7 +117,7 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
         iteration += 1
         print(f"\nResolution Iteration {iteration}")
         new_clauses: CNF = set()
-        clauses_list = list(clauses) # Need list for combinations
+        clauses_list = list(clauses)  # Need list for combinations
 
         # Generate pairs of clauses to resolve
         # Using combinations avoids resolving (A, B) then (B, A) and resolving a clause with itself
@@ -153,9 +153,10 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
         # print(f"  Current clauses: {cnf_to_string(clauses)}")
 
         # Safety break (optional, to prevent infinite loops in case of bugs)
-        if iteration > 100: # Adjust limit as needed
-             print("Warning: Resolution exceeded maximum iterations.")
-             return False
+        if iteration > 100:  # Adjust limit as needed
+            print("Warning: Resolution exceeded maximum iterations.")
+            return False
+
 
 # --- Example Usage ---
 if __name__ == "__main__":

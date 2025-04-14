@@ -30,9 +30,9 @@ class BeliefBase:
             raise TypeError("Can only add Formula objects to the belief base.")
         if formula not in self.beliefs:
             self.beliefs.append(formula)
-            # print(f"DEBUG: Added belief: {formula}") # Optional debug print
+            # print(f"DEBUG: Added belief: {formula}")
         # else:
-            # print(f"DEBUG: Belief already present: {formula}") # Optional debug print
+            # print(f"DEBUG: Belief already present: {formula}")
 
 
     def get_beliefs(self) -> List[Formula]:

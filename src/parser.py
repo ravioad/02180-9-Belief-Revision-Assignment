@@ -64,7 +64,6 @@ class Parser:
 
             self.consume()  # Consume the operator
 
-            # ---> Special handling for right-associativity (e.g., for implication) <---
             # If the operator is right-associative, parse the right operand with the *same* precedence.
             # Otherwise (left-associative), parse with the *next higher* precedence.
             # Here, we treat -> as right-associative, others as left-associative.
@@ -90,7 +89,7 @@ class Parser:
 
     def parse_expression(self) -> Formula:
         """Starts parsing an expression from the lowest precedence level."""
-        # Start parsing with the lowest precedence level for binary operators (e.g., ↔)
+        # Start parsing with the lowest precedence level for binary operators (like, ↔)
         # Note: Precedence climbing handles unary negation within parse_atom_or_paren
         lowest_binary_precedence = min(PRECEDENCE[op] for op in BINARY_OPERATORS)
         return self.parse_binary_op(lowest_binary_precedence)
