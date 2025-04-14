@@ -1,0 +1,167 @@
+Okay, let's break down the Belief Revision assignment into manageable steps. We'll focus on the default path (Belief Base approach) first, as that's the primary requirement, and then outline the steps for the optional Plausibility Order approach and the Mastermind challenge.
+
+Core Goal: Implement a belief revision engine in Python that takes propositional logic formulas as beliefs and revises them based on new input formulas, using methods discussed in the lectures (AGM, Resolution, Contraction, etc.).
+
+Path A: Belief Base Implementation (Default)
+
+This involves implementing the agent based on manipulating a set of formulas (the belief base).
+
+Step 1: Foundation - Propositional Logic Representation & Parsing
+
+Goal: Represent propositional formulas and parse input strings into this representation.
+
+Tasks:
+
+Define data structures (e.g., Python classes) to represent propositional formulas: Atoms (variables like p, q), Negation (¬), Conjunction (∧), Disjunction (∨), Implication (→), Biconditional (↔). Trees are a natural fit here.
+
+Implement a parser that takes a string (e.g., "p -> (q & ~r)") and converts it into your internal formula representation (e.g., an object tree). Handle operator precedence and parentheses. Self-implementation is implied, but check if a very basic, non-logic-package parser is allowed if needed.
+
+Step 2: Stage 1 - Belief Base Representation
+
+Goal: Store the agent's beliefs.
+
+Tasks:
+
+Implement a BeliefBase class.
+
+Internally, store beliefs as a collection (e.g., a Python set or list) of the formula objects created in Step 1. Note: This is the base, not the deductively closed set.
+
+Step 3: Stage 2 (Part 1) - CNF Conversion
+
+Goal: Convert any propositional formula into Conjunctive Normal Form (CNF). This is essential for resolution.
+
+Tasks:
+
+Implement functions for the standard CNF conversion steps:
+
+Eliminate Biconditionals (↔).
+
+Eliminate Implications (→).
+
+Move Negations (¬) inwards using De Morgan's laws and double-negation elimination.
+
+Distribute Disjunctions (∨) over Conjunctions (∧).
+
+The output should be a representation of CNF (e.g., a set of sets of literals, where each inner set is a clause and a literal is an atom or its negation).
+
+
+WE HERE!!!
+Step 4: Stage 2 (Part 2) - Logical Entailment via Resolution
+
+Goal: Implement a function entails(belief_base, formula) that returns True or False. Must implement this yourself.
+
+Tasks:
+
+Implement the Resolution Algorithm:
+
+Take the formulas in the belief_base and the negation of the formula to be checked (¬formula).
+
+Convert all these formulas into CNF (using Step 3) and combine them into a single set of clauses.
+
+Implement the resolution rule: Given two clauses containing complementary literals (e.g., p and ¬p), generate a new clause (the resolvent) containing all other literals from both parent clauses. Remember to handle factoring (removing duplicate literals in the resolvent).
+
+Repeatedly apply the resolution rule to the set of clauses until:
+
+The empty clause (representing contradiction) is derived. If so, return True (entailment holds).
+
+No new clauses can be generated. If so, return False (entailment does not hold).
+
+Manage the set of clauses efficiently to avoid redundant computations.
+
+Step 5: Stage 3 - Partial Meet Contraction
+
+Goal: Implement the contraction operator (÷). Remove a formula phi from the belief base KB such that KB_new <0xE2><0x8A><0xAF> phi.
+
+Tasks:
+
+Define how the "priority order on formulas in the belief base" will be represented (e.g., simply use the initial order, or allow explicit priorities).
+
+Implement finding KB ↓ phi: Generate subsets of the original KB. For each subset, check if it entails phi (using Step 4). Keep only those subsets that do not entail phi. Find the maximal such subsets (those where adding any other formula from the original KB would cause entailment).
+
+Implement a selection function (γ): From the maximal non-entailing subsets, select the "best" ones based on the priority order. (A simple approach is to select all maximal non-entailing subsets if priority isn't explicitly implemented, or those tied for highest priority if it is).
+
+Implement the final step: The new belief base is the intersection of the formulas in the selected subsets.
+
+Step 6: Stage 4 - Expansion and Revision (via Levi Identity)
+
+Goal: Implement expansion (+) and then the main revision operator (*).
+
+Tasks:
+
+Implement Expansion (KB + phi): Simply add the formula phi to the belief base set/list.
+
+Implement Revision (KB * phi) using the Levi Identity: KB * phi = (KB ÷ ¬phi) + phi. This reuses the contraction from Step 5 and the simple expansion.
+
+Step 7: Testing with AGM Postulates
+
+Goal: Verify the implemented revision operator against key AGM postulates.
+
+Tasks:
+
+Understand the required postulates (Success, Inclusion, Vacuity, Consistency, Extensionality).
+
+Create test cases (belief bases and input formulas) to check if your * operator satisfies these properties. For example, for Success (phi ∈ KB * phi), check if the revised base actually entails phi. For Consistency, check if KB * phi is consistent (doesn't entail False) unless ¬phi is a tautology.
+
+Path B: Plausibility Order Implementation (Optional Alternative)
+
+Step B1: Stage 1 - Plausibility Order Representation
+
+Represent possible worlds/valuations (assignments of T/F to all atoms).
+
+Implement a data structure for the plausibility order (e.g., a list of sets/lists, where index indicates plausibility level).
+
+Step B2: Stage 2 - Entailment Checking
+
+Implement a function to evaluate a formula in a given world.
+
+Implement logic to find the set of most plausible worlds (min(Worlds)) in the current order.
+
+Check if the formula holds in all worlds within min(Worlds).
+
+Step B3: Stage 3 - Revision Method
+
+Implement a revision method (e.g., minimal/conditionalization). This involves finding the most plausible worlds satisfying the input formula phi and making them the new most plausible worlds in the order, adjusting others accordingly.
+
+Optional Challenge: Mastermind
+
+Step M1: Formalization
+
+Define propositional atoms (e.g., P(c, pos) for color c at position pos, B(n) for n black pegs, W(n) for n white pegs).
+
+Encode the rules of Mastermind (e.g., exactly one color per position, constraints defining black/white pegs based on guess and secret code) as propositional formulas in CNF.
+
+Step M2: Belief Base Setup
+
+Initialize the code-breaker's BeliefBase with the game rules.
+
+Add the first guess (can be fixed or random, represented logically).
+
+Step M3: Game Loop Implementation
+
+Receive feedback (black/white pegs) for the current guess.
+
+Translate this feedback into a propositional formula.
+
+Revise the BeliefBase with the feedback formula using the engine from Path A (Step 6). KB_new = KB_old * feedback_formula.
+
+Infer the next guess: Find a code (a set of P(c, pos) atoms) that is consistent with the KB_new (i.e., KB_new does not entail the negation of the code). This might involve iterating through possible codes and checking consistency using the entailment checker.
+
+Output the next guess. Repeat.
+
+Final Steps (Common to All Paths)
+
+Step F1: Report Writing
+
+Document the design choices (data structures, algorithms), implementation details, and formalism used at each stage.
+
+Discuss learnings, challenges, and potential future work. Adhere to page limits. Be mathematically precise.
+
+Step F2: Packaging
+
+Create the report PDF.
+
+Create the declaration of labour PDF.
+
+Create a zip file with well-commented Python code and a clear README explaining how to run it.
+
+This breakdown provides a structured approach. You'd start with the foundational logic parsing, then proceed through the stages for the Belief Base implementation, using the entailment checker you build as a component for contraction, and finally combining contraction and expansion for revision.
