@@ -89,16 +89,16 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
 
     # 1. Negate the query
     negated_query = Not(query)
-    print(f"Negated query: {negated_query}")
+    # print(f"Negated query: {negated_query}")
 
     # 2. Combine KB and negated query, convert all to CNF
     clauses: CNF = set()
     all_formulas = belief_base.get_beliefs() + [negated_query]
-    print("Converting formulas to CNF:")
+    # print("Converting formulas to CNF:")
     for f in all_formulas:
-        print(f"  Converting: {f}")
+        # print(f"  Converting: {f}")
         cnf_f = to_cnf(f)
-        print(f"  Resulting CNF clauses: {cnf_to_string(cnf_f) if cnf_f else '{}'}")
+        # print(f"  Resulting CNF clauses: {cnf_to_string(cnf_f) if cnf_f else '{}'}")
         clauses.update(cnf_f)  # Add all clauses from this formula's CNF
 
     print(f"\nInitial combined clauses for resolution: {cnf_to_string(clauses)}")
