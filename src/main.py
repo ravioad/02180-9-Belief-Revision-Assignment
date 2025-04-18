@@ -1,8 +1,12 @@
+from typing import Tuple
+
 from belief_base import BeliefBase
-from formula import Atom, Or, Not, Implies, Iff
+from src.formula import Atom, Or, Not, Implies, Iff
 from parser import parse_formula
 from resolution import entails_resolution
 from belief_revision import contract_partial_meet_priority, revise
+from mastermind.mastermind import create_mastermind_initial_kb, generate_possible_codes, code_to_formula, \
+    calculate_feedback
 
 
 def test_resolution():
@@ -230,8 +234,107 @@ def test_belief_base_revision():
     print(f"RESULT: {revised_bb_r4}")
     expected_bb_r4 = BeliefBase([p, q])
     print(f"Matches expected {{p, q}}? {revised_bb_r4 == expected_bb_r4}")
+
+
+def test_mastermind():
+    initial_kb = create_mastermind_initial_kb()
+    current_kb = initial_kb  # Start with the rules
+
+    # --- Choose a Secret Code (for simulation purposes) ---
+    # In a real game, this is hidden. We use it to generate feedback.
+    SECRET_CODE: Tuple[str, ...] = ('c1', 'c3', 'c2')  # Example secret
+    print(f"\n--- Starting Mastermind Simulation ---")
+    print(f"Secret Code (for simulation): {SECRET_CODE}")
+
+    possible_codes = generate_possible_codes()
+    print(f"Total possible valid codes: {len(possible_codes)}")
+
+    MAX_GUESSES = 10
+    for guess_num in range(1, MAX_GUESSES + 1):
+        print(f"\n--- Guess #{guess_num} ---")
+
+        # **5. Make the Next Guess (Simplified Strategy)**
+        print("Finding consistent codes...")
+        consistent_codes = []
+        for potential_code_tuple in possible_codes:
+            potential_code_formula = code_to_formula(potential_code_tuple)
+            print(f"DEBUG: potential_code_formula type: {type(potential_code_formula)}")
+            # Check if KB entails the NEGATION of this code
+            # entails_resolution needs KB and the formula to check entailment for
+            # We want to know if KB |= ¬potential_code_formula
+            # This is equivalent to checking if KB ∧ ¬(¬potential_code_formula) is unsat
+            # i.e., KB ∧ potential_code_formula is unsat
+            # Let's define a consistency check function
+
+            # Temp KB for checking consistency: Add the potential code to current beliefs
+            temp_kb_beliefs = current_kb.get_beliefs() + [potential_code_formula]
+            temp_bb = BeliefBase(temp_kb_beliefs)
+
+            # If temp_bb entails False, then the code is inconsistent
+            if not entails_resolution(temp_bb, Atom("FALSE_ATOM")):  # Check against a known false atom
+                # print(f"  Code {potential_code_tuple} is consistent.") # Verbose
+                consistent_codes.append(potential_code_tuple)
+            else:
+                print(f"  Code {potential_code_tuple} is inconsistent.") # Verbose
+
+        print(f"Found {len(consistent_codes)} consistent codes remaining.")
+
+        if not consistent_codes:
+            print("Error: No consistent codes remain! KB might be contradictory or logic error.")
+            break
+
+        # Choose a guess - simplest: pick the first consistent one
+        # Slightly better: pick a random one from consistent ones
+        # Much better (Knuth): pick one (even inconsistent) that minimizes max remaining possibilities
+        # Let's pick the first one for simplicity
+        current_guess_tuple = consistent_codes[0]
+        print(f"Making guess: {current_guess_tuple}")
+
+        # ** Check if won **
+        if current_guess_tuple == SECRET_CODE:
+            print("\n*** Correct Code Guessed! Agent Wins! ***")
+            break
+
+        # ** Simulate getting feedback **
+        blacks, whites = calculate_feedback(SECRET_CODE, current_guess_tuple)
+        print(f"Feedback received: Blacks={blacks}, Whites={whites}")
+
+        # **3. Generate Feedback Formula (Simplified)**
+        # Formula states that the true secret code MUST be one of the codes
+        # that WOULD have produced this exact feedback for the current guess.
+        print("Generating feedback formula...")
+        formulas_matching_feedback = []
+        for code_tuple in possible_codes:  # Check against ALL possibilities
+            b_sim, w_sim = calculate_feedback(code_tuple, current_guess_tuple)
+            if b_sim == blacks and w_sim == whites:
+                formulas_matching_feedback.append(code_to_formula(code_tuple))
+
+        if not formulas_matching_feedback:
+            print("Error: No possible code matches the received feedback? Impossible.")
+            break
+
+        # The feedback formula is the disjunction of all codes matching the feedback
+        feedback_formula = Or.from_list(formulas_matching_feedback)
+        print(f"Feedback formula (simplified): Disjunction of {len(formulas_matching_feedback)} matching codes.")
+        # print(f" Feedback formula (long): {feedback_formula}") # Usually too long to print
+
+        # **4. Revise KB**
+        print("Revising belief base with feedback formula...")
+        current_kb = revise(current_kb, feedback_formula)
+        print(f"Revision complete. New KB has {len(current_kb)} explicit beliefs.")
+        # Note: Size of KB might not shrink much, as revision keeps entailed formulas
+
+        # Optional: Prune possible_codes list (optimization)
+        # Keep only codes consistent with the new KB for the *next* iteration's guess selection.
+        # This avoids re-checking codes already ruled out.
+        possible_codes = consistent_codes  # Start next search from currently consistent ones
+
+    if guess_num == MAX_GUESSES and current_guess_tuple != SECRET_CODE:
+        print("\n--- Agent failed to guess within limit. ---")
+
 if __name__ == "__main__":
     # test_resolution()
     # test_belief_revision_contraction()
     # more_test_cases_belief_revision()
-    test_belief_base_revision()
+    # test_belief_base_revision()
+    test_mastermind()

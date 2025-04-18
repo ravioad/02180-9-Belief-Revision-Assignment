@@ -1,10 +1,10 @@
 from typing import Set, FrozenSet, Union, List, Optional, Tuple
 from itertools import combinations
 
-from logic_utils import Literal, Clause, CNF, to_cnf, cnf_to_string
-from belief_base import BeliefBase
+from src.logic_utils import Literal, Clause, CNF, to_cnf, cnf_to_string
+from src.belief_base import BeliefBase
 
-from formula import Atom, Not, Formula, Or
+from src.formula import Atom, Not, Formula, Or
 from parser import parse_formula
 
 

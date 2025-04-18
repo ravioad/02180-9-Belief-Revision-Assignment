@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from formula import Implies, Not, And, Formula, Atom
+from src.formula import Implies, Not, And, Formula, Atom
 
 
 class BeliefBase:

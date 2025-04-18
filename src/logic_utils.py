@@ -1,4 +1,4 @@
-from formula import Formula, Atom, Not, And, Or, Implies, Iff  # Ensure these are imported
+from src.formula import Formula, Atom, Not, And, Or, Implies, Iff  # Ensure these are imported
 from parser import parse_formula
 from typing import Set, FrozenSet, Union, List, Optional, Tuple
 

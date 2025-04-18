@@ -1,4 +1,4 @@
-from formula import Formula, Not
+from src.formula import Formula, Not
 from belief_base import BeliefBase  # Make sure BeliefBase is imported
 from typing import List, Set, Optional
 from itertools import combinations
