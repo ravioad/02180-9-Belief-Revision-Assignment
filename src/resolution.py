@@ -59,10 +59,6 @@ def resolve(clause1: Clause, clause2: Clause) -> Set[Clause]:
             if not has_contradiction:
                 resolvents.add(frozenset(temp_literals))  # Use temp_literals after check
 
-    # If no complementary literals were found, resolution isn't possible between these two specific clauses
-    # based on the check direction (lit1 in clause1 vs complement in clause2).
-    # Since we iterate through all pairs later, this single function doesn't need to be symmetric.
-
     # If we resolved p and ~p, the resolvent is the empty set frozenset()
     # This happens if combined is empty after removing lit1 and complement.
     # The above logic handles this: if clause1={lit1} and clause2={complement},
@@ -85,7 +81,7 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
     Returns:
         True if KB entails query, False otherwise.
     """
-    print(f"\n--- Checking Entailment: KB |= {query} ---")
+    # print(f"\n--- Checking Entailment: KB |= {query} ---")
 
     # 1. Negate the query
     negated_query = Not(query)
@@ -101,7 +97,7 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
         # print(f"  Resulting CNF clauses: {cnf_to_string(cnf_f) if cnf_f else '{}'}")
         clauses.update(cnf_f)  # Add all clauses from this formula's CNF
 
-    print(f"\nInitial combined clauses for resolution: {cnf_to_string(clauses)}")
+    # print(f"\nInitial combined clauses for resolution: {cnf_to_string(clauses)}")
     if frozenset() in clauses:
         print(
             "Initial clauses contain empty clause (contradiction from start). KB |= query is vacuously true if KB was already contradictory, or ¬query was a tautology.")
@@ -115,7 +111,7 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
     iteration = 0
     while True:
         iteration += 1
-        print(f"\nResolution Iteration {iteration}")
+        # print(f"\nResolution Iteration {iteration}")
         new_clauses: CNF = set()
         clauses_list = list(clauses)  # Need list for combinations
 
@@ -130,25 +126,25 @@ def entails_resolution(belief_base: BeliefBase, query: Formula) -> bool:
             resolvents = resolve(clause1, clause2)
 
             if frozenset() in resolvents:
-                print(f"  Resolved {cnf_to_string({clause1})} and {cnf_to_string({clause2})} -> Empty Clause (⊥)")
-                print("\nEmpty clause derived. KB entails query.")
+                # print(f"  Resolved {cnf_to_string({clause1})} and {cnf_to_string({clause2})} -> Empty Clause (⊥)")
+                # print("\nEmpty clause derived. KB entails query.")
                 return True
 
             # Add only resolvents that are not already in the main 'clauses' set
             new_clauses.update(resolvents - clauses)
             # Optimization: if resolvents is empty or subset of clauses, 'update' does nothing
 
-        print(f"  Processed {processed_pairs} pairs in this iteration.")
+        # print(f"  Processed {processed_pairs} pairs in this iteration.")
 
         if not new_clauses:
             # No new clauses were generated in this iteration
-            print("\nNo new clauses derived. KB does not entail query.")
+            # print("\nNo new clauses derived. KB does not entail query.")
             return False
 
-        print(f"  New clauses generated: {cnf_to_string(new_clauses)}")
+        # print(f"  New clauses generated: {cnf_to_string(new_clauses)}")
         # Add the newly derived clauses to the main set for the next iteration
         clauses.update(new_clauses)
-        print(f"  Current clause set size: {len(clauses)}")
+        # print(f"  Current clause set size: {len(clauses)}")
         # Optional: print current full set (can be very large)
         # print(f"  Current clauses: {cnf_to_string(clauses)}")
 

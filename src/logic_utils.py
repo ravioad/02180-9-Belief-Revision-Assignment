@@ -10,7 +10,6 @@ Clause = FrozenSet[Literal]
 CNF = Set[Clause]
 
 
-
 def is_literal(formula: Formula) -> bool:
     """Checks if a formula is a literal (Atom or Not(Atom))."""
     return isinstance(formula, Atom) or (isinstance(formula, Not) and isinstance(formula.operand, Atom))
@@ -152,52 +151,20 @@ def _collect_clauses(formula: Formula) -> CNF:
 
 
 def to_cnf(formula: Formula) -> CNF:
-    """
-    Converts a given propositional logic Formula object into CNF.
-
-    Args:
-        formula: The Formula object to convert.
-
-    Returns:
-        A set of frozensets, where each frozenset represents a clause
-        (a disjunction of literals) and the outer set represents the
-        conjunction of these clauses. Literals are Atom or Not(Atom) objects.
-        Returns an empty set {} if the formula is unsatisfiable (equivalent to False).
-        Returns a set containing an empty frozenset {frozenset()} if the formula
-        is a tautology (equivalent to True - often handled by removing tautological clauses).
-        Note: Current _collect_clauses removes tautological clauses, so True becomes {}. Be careful.
-               We might adjust this later if needed for resolution edge cases.
-               Let's refine this: if the *only* result is tautology, return {frozenset()}.
-    """
     if not isinstance(formula, Formula):
         raise TypeError("Input must be a Formula object.")
 
     # 1. Eliminate Implications (↔, →)
     no_imp = _eliminate_implications(formula)
-    # print(f"DEBUG: After eliminate_implications: {no_imp}") # Optional
 
     # 2. Move Negations Inwards (NNF)
     nnf = _move_negation_inwards(no_imp)
-    # print(f"DEBUG: After move_negation_inwards (NNF): {nnf}") # Optional
 
     # 3. Distribute ∨ over ∧
     distributed = _distribute_or_over_and(nnf)
-    # print(f"DEBUG: After distribute_or_over_and: {distributed}") # Optional
 
     # 4. Collect clauses
     cnf_clauses = _collect_clauses(distributed)
-
-    # Handle edge case: If formula is a tautology, _collect_clauses might return empty set
-    # because all resulting clauses were trivial (like p V ~p).
-    # Conventionally, CNF of True is an empty set of clauses.
-    # If the original formula wasn't obviously False, and we get {}, it was likely True.
-    # Let's stick to returning {} for True for now. Resolution handles {} result correctly.
-    # We also need to handle False. If NNF resulted in contradiction like (p & ~p),
-    # _distribute might yield complex forms, but _collect_clauses should handle it.
-    # A direct contradiction 'p & ~p' would become And(Atom(p), Not(Atom(p))) in NNF
-    # and stay that way after distribute. _collect_clauses would combine {frozenset({Atom(p)})}
-    # and {frozenset({Not(Atom(p))})}. This is NOT the empty clause yet. Resolution finds that.
-
     return cnf_clauses
 
 
@@ -205,20 +172,18 @@ def to_cnf(formula: Formula) -> CNF:
 def cnf_to_string(cnf: CNF) -> str:
     """Converts a CNF set back to a readable string."""
     if not cnf:
-        return "{}"  # Represents True (empty conjunction)
+        return "{}"
     clause_strs = []
     for clause in cnf:
         if not clause:
-            return "⊥"  # Represents False (empty clause)
-        literal_strs = [str(lit) for lit in
-                        clause]  ##orted([str(lit) for lit in clause], key=str.lower) # Sort for consistent output
+            return "⊥"
+        literal_strs = [str(lit) for lit in clause]
         clause_strs.append("(" + " ∨ ".join(literal_strs) + ")")
-    return " ∧ ".join(sorted(clause_strs))  # Sort clauses for consistent output
+    return " ∧ ".join(sorted(clause_strs))
 
 
 # --- Example Usage ---
 if __name__ == "__main__":
-    # Assuming formula classes and parser are defined above or imported
 
     print("\n--- CNF Conversion Examples ---")
 
@@ -241,7 +206,7 @@ if __name__ == "__main__":
     # print(f"Raw CNF: {cnf_iff}\n")
     #
 
-    # # TODO: Robert example
+    # # TOO: Robert example
     # Original example from slides: r ↔ (p ∨ s)
     f_complex_str = "r <-> (p | s)"
     f_complex = parse_formula(f_complex_str)
@@ -264,7 +229,7 @@ if __name__ == "__main__":
     # print(f"CNF: {cnf_to_string(cnf_distrib)}")  # Expect: (a ∨ b) ∧ (a ∨ c)
     # print(f"Raw CNF: {cnf_distrib}\n")
     #
-    # #TODO: Tautology not working
+    # #TDO: Tautology""
     # f_tautology_str = "p ∨ ¬p"
     # f_tautology = parse_formula(f_tautology_str)
     # cnf_tautology = to_cnf(f_tautology)
@@ -272,7 +237,7 @@ if __name__ == "__main__":
     # print(f"CNF: {cnf_to_string(cnf_tautology)}")  # Expect: {} (True)
     # print(f"Raw CNF: {cnf_tautology}\n")
     #
-    # # TODO: What the fuck is this?
+    # # TDO: What""
     # f_contradiction_str = "p ∧ ¬p"
     # f_contradiction = parse_formula(f_contradiction_str)
     # cnf_contradiction = to_cnf(f_contradiction)

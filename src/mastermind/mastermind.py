@@ -3,13 +3,14 @@ from itertools import combinations, permutations
 from typing import List, Tuple
 
 from src.belief_base import BeliefBase
+from src.belief_revision import revise
 from src.formula import Atom, Or, And, Not, Formula
+from src.resolution import entails_resolution
 
 NUM_POSITIONS = 2
-COLORS = [f"c{i}" for i in range(1, 4)]  # c1, c2, c3, c4
+COLORS = [f"c{i}" for i in range(1, 4)]  # c1, c2, c3
 
 
-# --- M2: Atoms ---
 def S(color: str, pos: int) -> Atom:
     """Helper to create secret code Atom objects consistently."""
     if color not in COLORS:
@@ -22,7 +23,6 @@ def S(color: str, pos: int) -> Atom:
 ALL_ATOMS = [S(c, p) for c in COLORS for p in range(1, NUM_POSITIONS + 1)]
 
 
-# --- M3: Initial Knowledge Base ---
 def create_mastermind_initial_kb() -> BeliefBase:
     """Creates the initial KB with game rules."""
     kb = BeliefBase()
@@ -33,18 +33,16 @@ def create_mastermind_initial_kb() -> BeliefBase:
     for p in range(1, NUM_POSITIONS + 1):
         # At least one color in this position
         at_least_one_list = [S(c, p) for c in COLORS]
-        kb.add_belief(Or.from_list(at_least_one_list))  # Need helper for multi-Or
+        kb.add_belief(Or.from_list(at_least_one_list))
 
         # At most one color in this position
         for c1, c2 in combinations(COLORS, 2):
-            # ¬(S_c1_p ∧ S_c2_p) which is ¬S_c1_p ∨ ¬S_c2_p
             kb.add_belief(Or(Not(S(c1, p)), Not(S(c2, p))))
 
     # Rule 2: Each color is used at most once (no duplicates in secret)
     print("Adding: Each color used at most once...")
     for c in COLORS:
         for p1, p2 in combinations(range(1, NUM_POSITIONS + 1), 2):
-            # ¬(S_c_p1 ∧ S_c_p2) which is ¬S_c_p1 ∨ ¬S_c_p2
             kb.add_belief(Or(Not(S(c, p1)), Not(S(c, p2))))
 
     print(f"Initial KB created with {len(kb)} rule formulas.")
@@ -53,21 +51,13 @@ def create_mastermind_initial_kb() -> BeliefBase:
 
 
 # Helper function for creating nested Ors from a list
-# Add this to the Formula classes or where appropriate
 @classmethod
 def from_list(cls, formulas: List[Formula]) -> Formula:
     """Class method for Or/And to create nested structure from a list."""
     if not formulas:
-        # Or-ing nothing is typically False, And-ing nothing is True.
-        # This might need adjustment based on logical conventions used.
-        # For CNF clauses (Or), an empty clause is False.
-        # For CNF formulas (And), an empty formula is True.
-        # Let's raise error for now, handle specific cases if needed.
         raise ValueError("Cannot create Or/And from empty list directly.")
     if len(formulas) == 1:
         return formulas[0]
-    # Recursively build: Or(f1, Or(f2, Or(...)))
-    # Or Or(Or(Or(f1, f2), f3), ...) # Left-associative is often easier
     result = formulas[0]
     for i in range(1, len(formulas)):
         if cls == Or:
@@ -130,7 +120,8 @@ def calculate_feedback(secret_code: Tuple[str, ...], guess_code: Tuple[str, ...]
 
     return blacks, whites
 
-def generate_possible_codes() -> List[Tuple[str,...]]:
+
+def generate_possible_codes() -> List[Tuple[str, ...]]:
     """Generates all valid codes (permutations of NUM_POSITIONS distinct colors)."""
     possible_codes = []
     # Get all combinations of NUM_POSITIONS colors from the available COLORS
@@ -140,6 +131,73 @@ def generate_possible_codes() -> List[Tuple[str,...]]:
             possible_codes.append(p)
     return possible_codes
 
-if __name__ == "__main__":
+
+def mastermind():
     initial_kb = create_mastermind_initial_kb()
-    # print(ALL_ATOMS)
+    current_kb = initial_kb  # Start with the rules
+
+    # --- Choose a Secret Code (for simulation purposes) ---
+    # In a real game, this is hidden. We use it to generate feedback.
+    SECRET_CODE: Tuple[str, ...] = ('c3', 'c2')  # Example secret
+    print(f"\n--- Starting Mastermind Simulation ---")
+    print(f"Secret Code (for simulation): {SECRET_CODE}")
+
+    possible_codes = generate_possible_codes()
+    print(f"Total possible valid codes: {len(possible_codes)}")
+
+    MAX_GUESSES = 10
+    for guess_num in range(1, MAX_GUESSES + 1):
+        print(f"\n--- Guess #{guess_num} ---")
+
+        print("Finding consistent codes...")
+        consistent_codes = []
+        for potential_code_tuple in possible_codes:
+            potential_code_formula = code_to_formula(potential_code_tuple)
+
+            temp_kb_beliefs = current_kb.get_beliefs() + [potential_code_formula]
+            temp_bb = BeliefBase(temp_kb_beliefs)
+
+            if not entails_resolution(temp_bb, Atom("FALSE_ATOM")):
+                consistent_codes.append(potential_code_tuple)
+            else:
+                print(f"  Code {potential_code_tuple} is inconsistent.")
+
+        print(f"Found {len(consistent_codes)} consistent codes remaining.")
+
+        if not consistent_codes:
+            print("Error: No consistent codes remain! KB might be contradictory or logic error.")
+            break
+
+        current_guess_tuple = consistent_codes[0]
+        print(f"Making guess: {current_guess_tuple}")
+
+        # ** Check if won **
+        if current_guess_tuple == SECRET_CODE:
+            print("\n*** Correct Code Guessed! Agent Wins! ***")
+            break
+
+        blacks, whites = calculate_feedback(SECRET_CODE, current_guess_tuple)
+        print(f"Feedback received: Blacks={blacks}, Whites={whites}")
+
+        print("Generating feedback formula...")
+        formulas_matching_feedback = []
+        for code_tuple in possible_codes:
+            b_sim, w_sim = calculate_feedback(code_tuple, current_guess_tuple)
+            if b_sim == blacks and w_sim == whites:
+                formulas_matching_feedback.append(code_to_formula(code_tuple))
+
+        if not formulas_matching_feedback:
+            print("Error: No possible code matches the received feedback? Impossible.")
+            break
+
+        feedback_formula = Or.from_list(formulas_matching_feedback)
+        print(f"Feedback formula (simplified): Disjunction of {len(formulas_matching_feedback)} matching codes.")
+
+        print("Revising belief base with feedback formula...")
+        current_kb = revise(current_kb, feedback_formula)
+        print(f"Revision complete. New KB has {len(current_kb)} explicit beliefs.")
+
+        possible_codes = consistent_codes  # Start next search from currently consistent ones
+
+    if guess_num == MAX_GUESSES and current_guess_tuple != SECRET_CODE:
+        print("\n--- Agent failed to guess within limit. ---")

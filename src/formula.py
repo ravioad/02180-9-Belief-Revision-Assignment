@@ -30,7 +30,6 @@ class Atom(Formula):
     def __init__(self, name: str):
         # Basic validation: starts with letter, alphanumeric afterwards
         if not name or not name[0].isalpha() or not name.replace('_', '').isalnum():
-            # Allow underscores but ensure it's otherwise alphanumeric
              raise ValueError(f"Invalid atom name: '{name}'. Must start with a letter and be alphanumeric (underscores allowed).")
         self.name = name
 
@@ -41,7 +40,6 @@ class Atom(Formula):
         return isinstance(other, Atom) and self.name == other.name
 
     def __hash__(self):
-        # Hash based on the variable name
         return hash(self.name)
 
     def get_atoms(self) -> set:
@@ -68,7 +66,6 @@ class Not(Formula):
         return isinstance(other, Not) and self.operand == other.operand
 
     def __hash__(self):
-        # Hash based on the operator and operand
         return hash(("¬", self.operand))
 
     def get_atoms(self) -> set:
@@ -125,7 +122,6 @@ class BinaryOp(Formula):
                self.right == other.right
 
     def __hash__(self):
-         # Hash based on the operator symbol and operands
         return hash((self.symbol, self.left, self.right))
 
     def get_atoms(self) -> set:
