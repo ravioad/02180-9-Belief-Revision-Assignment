@@ -1,11 +1,10 @@
-# --- M1: Configuration ---
 from itertools import combinations, permutations
 from typing import List, Tuple
 
-from src.belief_base import BeliefBase
-from src.belief_revision import revise
-from src.formula import Atom, Or, And, Not, Formula
-from src.resolution import entails_resolution
+from belief_base import BeliefBase
+from belief_revision import revise
+from formula import Atom, Or, And, Not, Formula
+from resolution import entails_resolution
 
 NUM_POSITIONS = 2
 COLORS = [f"c{i}" for i in range(1, 4)]  # c1, c2, c3
@@ -134,11 +133,9 @@ def generate_possible_codes() -> List[Tuple[str, ...]]:
 
 def mastermind():
     initial_kb = create_mastermind_initial_kb()
-    current_kb = initial_kb  # Start with the rules
+    current_kb = initial_kb
 
-    # --- Choose a Secret Code (for simulation purposes) ---
-    # In a real game, this is hidden. We use it to generate feedback.
-    SECRET_CODE: Tuple[str, ...] = ('c3', 'c2')  # Example secret
+    SECRET_CODE: Tuple[str, ...] = ('c2', 'c1')
     print(f"\n--- Starting Mastermind Simulation ---")
     print(f"Secret Code (for simulation): {SECRET_CODE}")
 
@@ -171,7 +168,6 @@ def mastermind():
         current_guess_tuple = consistent_codes[0]
         print(f"Making guess: {current_guess_tuple}")
 
-        # ** Check if won **
         if current_guess_tuple == SECRET_CODE:
             print("\n*** Correct Code Guessed! Agent Wins! ***")
             break

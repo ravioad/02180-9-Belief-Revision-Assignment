@@ -1,23 +1,19 @@
-from typing import List, Tuple, Optional
 import re
+from typing import List
 
 
 class Formula:
     """Base (Parent) class for all propositional logic formulas."""
     def __eq__(self, other):
-        # Subclasses must implement based on structure
         raise NotImplementedError
 
     def __hash__(self):
-        # Subclasses must implement based on structure
         raise NotImplementedError
 
     def __repr__(self):
-        # For user-friendly display (subclasses should override)
         return self.__str__()
 
     def __str__(self):
-         # Subclasses must implement proper string representation
         raise NotImplementedError
 
     def get_atoms(self) -> set:
@@ -166,6 +162,5 @@ def tokenize(formula_str: str) -> List[str]:
     # Add spaces around operators and parentheses for splitting
     # Ensure single character ops and multi-char ops are handled
     formula_str = re.sub(r'([()¬∧∨→↔])', r' \1 ', formula_str)
-    # Remove extra whitespace
     tokens = formula_str.strip().split()
     return [tok for tok in tokens if tok] # Filter out empty strings

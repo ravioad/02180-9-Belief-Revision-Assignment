@@ -1,7 +1,7 @@
-from src.belief_base import BeliefBase
-from src.belief_revision import revise, expand
-from src.formula import Atom, Formula, Not, Iff, Implies, Or, And
-from src.resolution import entails_resolution
+from belief_base import BeliefBase
+from belief_revision import revise, expand
+from formula import Atom, Formula, Not, Iff, Implies, Or, And
+from resolution import entails_resolution
 
 FALSE_ATOM = Atom("AGM_FALSE_CONST")
 

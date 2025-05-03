@@ -1,9 +1,10 @@
 from belief_base import BeliefBase
 from belief_revision import contract_partial_meet_priority, revise
+from formula import Atom, Or, Not, Implies
 from parser import parse_formula
 from resolution import entails_resolution
 from src.agm_tester import test_agm_postulates
-from src.formula import Atom, Or, Not, Implies
+from src.mastermind import mastermind
 
 
 def test_resolution():
@@ -237,5 +238,5 @@ if __name__ == "__main__":
     # test_resolution()
     # test_belief_revision_contraction()
     # test_belief_base_revision()
-    test_agm_postulates()
-    # mastermind()
+    # test_agm_postulates()
+    mastermind()

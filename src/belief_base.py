@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from src.formula import Formula
+from formula import Formula
 
 
 class BeliefBase:

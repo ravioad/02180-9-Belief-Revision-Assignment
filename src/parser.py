@@ -4,7 +4,6 @@ from formula import Formula, Not, Atom, PRECEDENCE, BINARY_OPERATORS, And, Or, I
 
 
 class Parser:
-    """Encapsulates the parsing state."""
 
     def __init__(self, tokens: List[str]):
         self.tokens = tokens
@@ -64,16 +63,11 @@ class Parser:
 
             self.consume()  # Consume the operator
 
-            # If the operator is right-associative, parse the right operand with the *same* precedence.
-            # Otherwise (left-associative), parse with the *next higher* precedence.
-            # Here, we treat -> as right-associative, others as left-associative.
             if op_token == '→':
                 right_operand = self.parse_binary_op(current_precedence)
             else:
                 right_operand = self.parse_binary_op(current_precedence + 1)
-            # <--- End special handling --->
 
-            # Build the formula
             if op_token == '∧':
                 left_operand = And(left_operand, right_operand)
             elif op_token == '∨':
@@ -81,16 +75,11 @@ class Parser:
             elif op_token == '→':
                 left_operand = Implies(left_operand, right_operand)
             elif op_token == '↔':
-                # Iff is tricky, often non-associative or lowest precedence
-                # For simplicity here, treat as left-associative like others.
                 left_operand = Iff(left_operand, right_operand)
 
         return left_operand
 
     def parse_expression(self) -> Formula:
-        """Starts parsing an expression from the lowest precedence level."""
-        # Start parsing with the lowest precedence level for binary operators (like, ↔)
-        # Note: Precedence climbing handles unary negation within parse_atom_or_paren
         lowest_binary_precedence = min(PRECEDENCE[op] for op in BINARY_OPERATORS)
         return self.parse_binary_op(lowest_binary_precedence)
 

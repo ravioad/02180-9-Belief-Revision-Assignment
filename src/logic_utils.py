@@ -1,4 +1,4 @@
-from src.formula import Formula, Atom, Not, And, Or, Implies, Iff  # Ensure these are imported
+from formula import Formula, Atom, Not, And, Or, Implies, Iff  # Ensure these are imported
 from parser import parse_formula
 from typing import Set, FrozenSet, Union, List, Optional, Tuple
 
@@ -168,7 +168,6 @@ def to_cnf(formula: Formula) -> CNF:
     return cnf_clauses
 
 
-# --- Helper to print CNF nicely ---
 def cnf_to_string(cnf: CNF) -> str:
     """Converts a CNF set back to a readable string."""
     if not cnf:
@@ -180,67 +179,3 @@ def cnf_to_string(cnf: CNF) -> str:
         literal_strs = [str(lit) for lit in clause]
         clause_strs.append("(" + " ∨ ".join(literal_strs) + ")")
     return " ∧ ".join(sorted(clause_strs))
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-
-    print("\n--- CNF Conversion Examples ---")
-
-    # f_simple = parse_formula("p")
-    # cnf_simple = to_cnf(f_simple)
-    # print(f"Formula: {f_simple}")
-    # print(f"CNF: {cnf_to_string(cnf_simple)}")
-    # print(f"Raw CNF: {cnf_simple}\n") # Raw representation
-    #
-    # f_imp = parse_formula("p → q")
-    # cnf_imp = to_cnf(f_imp)
-    # print(f"Formula: {f_imp}")
-    # print(f"CNF: {cnf_to_string(cnf_imp)}")  # Expect: (¬p ∨ q)
-    # print(f"Raw CNF: {cnf_imp}\n")
-    #
-    # f_iff = parse_formula("p ↔ q")
-    # cnf_iff = to_cnf(f_iff)
-    # print(f"Formula: {f_iff}")
-    # print(f"CNF: {cnf_to_string(cnf_iff)}") # Expect: (¬p ∨ q) ∧ (p ∨ ¬q)
-    # print(f"Raw CNF: {cnf_iff}\n")
-    #
-
-    # # TOO: Robert example
-    # Original example from slides: r ↔ (p ∨ s)
-    f_complex_str = "r <-> (p | s)"
-    f_complex = parse_formula(f_complex_str)
-    cnf_complex = to_cnf(f_complex)
-    print(f"Formula: {f_complex_str}  -->  {f_complex}")
-    print(f"CNF: {cnf_to_string(cnf_complex)}")  # Expect: (¬r ∨ p ∨ s) ∧ (¬p ∨ r) ∧ (¬s ∨ r)
-    print(f"Raw CNF: {cnf_complex}\n")
-    #
-    # f_demorgan_str = "¬(p ∧ q)"
-    # f_demorgan = parse_formula(f_demorgan_str)
-    # cnf_demorgan = to_cnf(f_demorgan)
-    # print(f"Formula: {f_demorgan_str}  -->  {f_demorgan}")
-    # print(f"CNF: {cnf_to_string(cnf_demorgan)}")  # Expect: (¬p ∨ ¬q)
-    # print(f"Raw CNF: {cnf_demorgan}\n")
-    #
-    # f_distrib_str = "a ∨ (b ∧ c)"
-    # f_distrib = parse_formula(f_distrib_str)
-    # cnf_distrib = to_cnf(f_distrib)
-    # print(f"Formula: {f_distrib_str}  -->  {f_distrib}")
-    # print(f"CNF: {cnf_to_string(cnf_distrib)}")  # Expect: (a ∨ b) ∧ (a ∨ c)
-    # print(f"Raw CNF: {cnf_distrib}\n")
-    #
-    # #TDO: Tautology""
-    # f_tautology_str = "p ∨ ¬p"
-    # f_tautology = parse_formula(f_tautology_str)
-    # cnf_tautology = to_cnf(f_tautology)
-    # print(f"Formula: {f_tautology_str}  -->  {f_tautology}")
-    # print(f"CNF: {cnf_to_string(cnf_tautology)}")  # Expect: {} (True)
-    # print(f"Raw CNF: {cnf_tautology}\n")
-    #
-    # # TDO: What""
-    # f_contradiction_str = "p ∧ ¬p"
-    # f_contradiction = parse_formula(f_contradiction_str)
-    # cnf_contradiction = to_cnf(f_contradiction)
-    # print(f"Formula: {f_contradiction_str}  -->  {f_contradiction}")
-    # print(f"CNF: {cnf_to_string(cnf_contradiction)}")  # Expect: (p) ∧ (¬p) (Resolution will find contradiction)
-    # print(f"Raw CNF: {cnf_contradiction}\n")

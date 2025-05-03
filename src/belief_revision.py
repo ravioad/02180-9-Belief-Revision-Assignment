@@ -1,4 +1,4 @@
-from src.formula import Formula, Not
+from formula import Formula, Not
 from belief_base import BeliefBase  # Make sure BeliefBase is imported
 from typing import List, Set, Optional
 from itertools import combinations
@@ -15,7 +15,6 @@ def get_priority(formula: Formula, original_beliefs_list: List[Formula]) -> int:
 
 
 def generate_subsets(elements: List[Formula]):
-    """Generates all subsets (including empty) of a list of formulas."""
     n = len(elements)
     for i in range(n + 1):  # Include 0 for empty set
         for combo in combinations(elements, i):
@@ -30,16 +29,6 @@ def expand(belief_base: BeliefBase, formula_to_add: Formula) -> BeliefBase:
 
 
 def revise(belief_base: BeliefBase, formula_to_revise_with: Formula) -> BeliefBase:
-    """
-    Performs Revision using the Levi Identity: KB * phi = (KB ÷ ¬phi) + phi.
-
-    Args:
-        belief_base: The initial BeliefBase.
-        formula_to_revise_with: The Formula (phi) to revise the base with.
-
-    Returns:
-        A new BeliefBase representing the revised beliefs.
-    """
     phi = formula_to_revise_with
     neg_phi = Not(phi)
 
@@ -54,7 +43,6 @@ def contract_partial_meet_priority(belief_base: BeliefBase, formula_to_contract:
     original_beliefs: List[Formula] = belief_base.get_beliefs()  # Keep order!
     phi = formula_to_contract
 
-    # Tautology check (same as before)
     empty_bb = BeliefBase()
     if entails_resolution(empty_bb, phi):
         print(f"Formula {phi} is a tautology. Cannot contract. Returning original KB.")
@@ -95,17 +83,14 @@ def contract_partial_meet_priority(belief_base: BeliefBase, formula_to_contract:
 
     # 2. Selection (γ) - Based on Priority (Insertion Order)
     best_remainders: List[Set[Formula]] = []
-    # We want to MAXIMIZE the MINIMUM index (priority number) of the excluded formulas
     max_lowest_priority_excluded = -1  # Track the highest index number seen for max excluded priority
 
     original_belief_set = set(original_beliefs)
     for remainder in maximal_remainders:
         excluded_formulas = original_belief_set - remainder
         if not excluded_formulas:
-            # This remainder excludes nothing. Its "max excluded priority index" is effectively infinity (lowest priority).
             current_min_priority_excluded_index = float('inf')
         else:
-            # Find the highest priority (lowest index) formula excluded by this remainder
             current_min_priority_excluded_index = min(get_priority(f, original_beliefs) for f in excluded_formulas)
 
         # We prefer remainders where the highest-priority thing they exclude
@@ -120,7 +105,6 @@ def contract_partial_meet_priority(belief_base: BeliefBase, formula_to_contract:
 
     selected_remainders = best_remainders
 
-    # 3. Intersection
     if not selected_remainders:
         final_beliefs = set()
     else:
