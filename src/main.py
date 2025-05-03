@@ -1,6 +1,5 @@
 from belief_base import BeliefBase
 from belief_revision import contract_partial_meet_priority, revise
-from mastermind.mastermind import mastermind, COLORS
 from parser import parse_formula
 from resolution import entails_resolution
 from src.agm_tester import test_agm_postulates
@@ -237,7 +236,6 @@ def test_belief_base_revision():
 if __name__ == "__main__":
     # test_resolution()
     # test_belief_revision_contraction()
-    # more_test_cases_belief_revision()
     # test_belief_base_revision()
     test_agm_postulates()
     # mastermind()
