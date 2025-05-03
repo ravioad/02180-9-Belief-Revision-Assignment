@@ -23,9 +23,7 @@ The project code is organized as follows within the submitted `src` directory:
 *   **`src/belief_revision.py`**: Contains the implementations for `contract_partial_meet_priority`, `expand`, and `revise`.
 *   **`src/agm_tester.py`**: Includes the functions (`check_success`, `check_vacuity`, etc.) used to test the implemented revision operator against AGM postulates.
 *   **`src/main.py`**: The main script used to run demonstrations, examples, and tests for the core belief revision engine and potentially the simplified Mastermind run.
-*   **`src/mastermind/`** (Optional Subdirectory):
-    *   **`src/mastermind/__init__.py`**: Marks `mastermind` as a Python sub-package.
-    *   **`src/mastermind/mastermind.py`**: Contains the code specific to the Mastermind agent attempt, including rule generation, feedback processing, and the game loop logic.
+*   **`src/mastermind.py`**: Contains the code specific to the Mastermind agent attempt, including rule generation, feedback processing, and the game loop logic.
 
 ## How to Run
 
