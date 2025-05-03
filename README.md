@@ -7,8 +7,6 @@
 *   David Hansen (s224349)
 *   Arjaco Kaki (s232585)
 
-**Date:** May 5, 2025
-
 ## Project Overview
 
 This project implements a belief revision engine based on the concepts discussed in the 02180 Introduction to AI course. It follows the "Belief Base" approach, using Partial Meet Contraction with a priority order (based on insertion) and the Levi Identity for revision. The core logic, including formula parsing, CNF conversion, and resolution-based entailment checking, was implemented from scratch as required. An optional Mastermind code-breaking agent using this engine was also attempted.
