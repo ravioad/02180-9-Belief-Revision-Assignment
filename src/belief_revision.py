@@ -2,6 +2,8 @@ from formula import Formula, Not
 from belief_base import BeliefBase  # Make sure BeliefBase is imported
 from typing import List, Set, Optional
 from itertools import combinations
+import multiprocessing as mp
+from functools import partial
 
 from resolution import entails_resolution
 
@@ -38,6 +40,9 @@ def revise(belief_base: BeliefBase, formula_to_revise_with: Formula) -> BeliefBa
 
     return revised_base
 
+def check_subset_entailment(subset, formula_to_contract):
+    subset_bb = BeliefBase(list(subset))
+    return subset, not entails_resolution(subset_bb, formula_to_contract)
 
 def contract_partial_meet_priority(belief_base: BeliefBase, formula_to_contract: Formula) -> BeliefBase:
     original_beliefs: List[Formula] = belief_base.get_beliefs()  # Keep order!
@@ -52,14 +57,31 @@ def contract_partial_meet_priority(belief_base: BeliefBase, formula_to_contract:
     num_subsets = 2 ** n
     print(f"CHECKKK: Number of subsets: {num_subsets}")
 
+    all_subsets = list(generate_subsets(original_beliefs))
+
+    # Using max number of CPU cores available to process subsets in parallel
+    num_cores = mp.cpu_count()
+    print(f"Using {num_cores} CPU cores for parallel processing")
+    pool = mp.Pool(processes=num_cores)
+    
+    check_func = partial(check_subset_entailment, formula_to_contract=phi)
     check = 0
-    for subset_formulas_set in generate_subsets(original_beliefs):
-        subset_bb = BeliefBase(list(subset_formulas_set))
-        if not entails_resolution(subset_bb, phi):
-            potential_remainders.append(subset_formulas_set)
-            check += 1
-            percentage = (check / num_subsets) * 100
-            print(f"Checking progress: {percentage:.2f}%")
+    batch_size = max(1, len(all_subsets) // 100)
+    
+    for i in range(0, len(all_subsets), batch_size):
+        batch = all_subsets[i:i+batch_size]
+        results = pool.map(check_func, batch)
+        
+        for subset, is_valid in results:
+            if is_valid:
+                potential_remainders.append(subset)
+        
+        check += len(batch)
+        percentage = (check / num_subsets) * 100
+        print(f"Checking progress: {percentage:.2f}%")
+    
+    pool.close()
+    pool.join()
 
     maximal_remainders: List[Set[Formula]] = []
     potential_remainders.sort(key=len, reverse=True)

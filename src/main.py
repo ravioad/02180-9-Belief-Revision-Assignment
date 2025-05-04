@@ -3,8 +3,8 @@ from belief_revision import contract_partial_meet_priority, revise
 from formula import Atom, Or, Not, Implies
 from parser import parse_formula
 from resolution import entails_resolution
-from src.agm_tester import test_agm_postulates
-from src.mastermind import mastermind
+from agm_tester import test_agm_postulates
+from mastermind import mastermind
 
 
 def test_resolution():
